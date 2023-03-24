@@ -7,7 +7,12 @@ const { Product, Category, Tag, ProductTag } = require('../../models');
 router.get('/', async (req, res) => {
   // find all products
   try {
-    const productData = await Product.findAll();
+    const productData = await Product.findAll({
+      include: [
+        Category,
+        { model: Tag, through: ProductTag }
+      ]
+    });
     res.status(200).json(productData);
   } catch (err) {
     res.status(500).json(err);
@@ -15,26 +20,13 @@ router.get('/', async (req, res) => {
   // be sure to include its associated Category and Tag data
 });
 
-// ***Previous code that had syntax errors
-// // get one product
-// router.get('/:id', async (req, res) => {
-//   try {
-//   // find a single product by its `id
-//     const productData = await Product.findByPk(req.params.id, {
-//       include: [{}]
-//     })
-//   // be sure to include its associated Category and Tag data
-//   }
-// )};
-
-
-// The redone code from above 
 router.get('/:id', async (req, res) => {
   try {
     // find a single product by its `id`
     const productData = await Product.findByPk(req.params.id, {
-      include: [{ model: Category, through: 'ProductCategory', as: 'category' },
-                { model: Tag, through: 'ProductTag', as: 'tags' }]
+      include: [
+        { model: Tag, through: ProductTag }
+      ]
     });
 
     // be sure to include its associated Category and Tag data
@@ -57,7 +49,7 @@ router.post('/', async (req, res) => {
     }
   */
   try {
-    const productData = await Location.create(req.body);
+    const productData = await Product.create(req.body);
     res.status(200).json(productData);
   } catch (err) {
     res.status(400).json(err);
@@ -137,6 +129,7 @@ router.delete('/:id', async (req, res) => {
       res.status(404).json({ message: 'No product found with this id!'});
       return;
     }
+    res.status(200).json(Category)
   } catch (err) {
     res.status(500).json(err);
   }
